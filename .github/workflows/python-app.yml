@@ -52,13 +52,26 @@ jobs:
         name: build-package
         path: package.zip
 
-  notify:
+    notify:
     needs: [tests, build]
     runs-on: ubuntu-latest
     steps:
-    - name: Install mailutils
-      run: sudo apt-get install -y mailutils
+    - uses: actions/checkout@v3
 
+    # Instala o Python e dependências
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.x'
+
+    # Instala dependências se necessário
+    - name: Install dependencies
+      run: pip install --upgrade pip
+
+    # Roda o script para enviar e-mail
     - name: Send Notification Email
-      run: |
-        echo "Pipeline executado com sucesso!" | mail -s "Notificação do Pipeline" ${{ secrets.EMAIL }}
+      run: python send_email.py
+      env:
+        EMAIL_USER: ${{ secrets.EMAIL_USER }}  # Seu e-mail configurado como secret
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}  # Senha de app (não a senha comum)
+        EMAIL_TO: ${{ secrets.EMAIL_TO }}  # Destinatário configurado como secret
